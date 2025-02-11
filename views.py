@@ -8,7 +8,9 @@ from model import Model
 
 views = Blueprint(__name__, "views")
 
+# Sidebar saves
 chat_saves = Saves()
+# Showing chat
 chat = ""
 
 @views.route("/", methods=["GET", "POST"])
@@ -26,7 +28,7 @@ def main():
 
         if prompt:
             response = model.get_response(prompt, short_answer)
-
+            # Also showing the prompt in the response
             dialog = f"<br><br><h2>{prompt}</h2>" + response
             global chat
             chat += dialog
@@ -38,7 +40,8 @@ def main():
 
 @views.route("/clear", methods=["POST"])
 def clear_chat():
-    chat.clear()
+    global chat
+    chat = ""
     return redirect(url_for("views.main"))
 
 
@@ -78,7 +81,7 @@ def manage_saves():
 @views.route("/export", methods=["POST"])
 def export_saves():
     # Dictionary to json
-    data = json.dumps(chat_saves)
+    data = json.dumps(chat_saves.to_dict())
 
     byte_content = io.BytesIO(data.encode("utf-8"))
 
@@ -103,7 +106,7 @@ def load_saves():
         try:
             # Read the JSON data from the file
             data = json.load(file)
-            print(type(data))
+            # Load the saves into Saves object
             for name, content in data.items():
                 chat_saves.add_save(name, content)
             
